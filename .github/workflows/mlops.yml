@@ -56,21 +56,19 @@ jobs:
         env:
           CLOUD_CREDENTIALS: ${{ secrets.CLOUD_CREDENTIALS }}
         run: |
-          python -c "
-          import os, json
-          content = os.environ.get('CLOUD_CREDENTIALS', '')
-          with open('sa-key.json', 'w') as f:
-              f.write(content)
-          try:
-              data = json.loads(content)
-              print('Loaded SA Email:', data.get('client_email'))
-          except Exception as e:
-              print('JSON Parse Error:', e)
-          "
+          echo "$CLOUD_CREDENTIALS" > "$GITHUB_WORKSPACE/sa-key.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$GITHUB_WORKSPACE/sa-key.json" >> $GITHUB_ENV
-          dvc remote modify myremote credentialpath sa-key.json
+          dvc remote modify --local myremote credentialpath "$GITHUB_WORKSPACE/sa-key.json"
+          python -c "
+          import json
+          with open('sa-key.json') as f:
+              data = json.load(f)
+          print('SA Email:', data.get('client_email'))
+          "
 
       - name: Pull data with DVC
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/sa-key.json
         run: dvc pull data/train_phase1.csv.dvc data/eval.csv.dvc
 
       - name: Train model
