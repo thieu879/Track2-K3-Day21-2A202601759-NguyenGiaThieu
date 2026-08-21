@@ -1,4 +1,4 @@
-# Sieu tham so cho mo hinh RandomForestClassifier (Best Model)
+# Hyperparameters for RandomForestClassifier
 n_estimators: 200
 max_depth: 15
 min_samples_split: 2
